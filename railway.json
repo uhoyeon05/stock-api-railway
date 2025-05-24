@@ -1,0 +1,8 @@
+{
+  "build": {
+    "env": {
+      "ALPHAVANTAGE_API_KEY": "0MCKJ8OSGSASDY27"
+    }
+  },
+  "start": "uvicorn main:app --host 0.0.0.0 --port $PORT"
+}
