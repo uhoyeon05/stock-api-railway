@@ -13,31 +13,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.getenv("ALPHAVANTAGE_API_KEY", "0MCKJ8OSGSASDY27")
+API_KEY = os.getenv("ALPHAVANTAGE_API_KEY", "여기에_발급받은_API키_입력")
 BASE_URL = "https://www.alphavantage.co/query"
 
-@app.get("/price")
+
+@app.get("/api/price")
 def get_stock_price(ticker: str):
     url = f"{BASE_URL}?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol={ticker}&apikey={API_KEY}"
     try:
         res = requests.get(url)
         res.raise_for_status()
         json_data = res.json()
-
         if "Note" in json_data or "Error Message" in json_data:
             return {"error": "API limit or invalid request", "details": json_data}
-
         data = json_data.get("Monthly Adjusted Time Series", {})
         if not data:
             return {"error": "No time series data returned", "raw_response": json_data}
-
         result = [
-            {
-                "date": date,
-                "close": float(val.get("5. adjusted close", 0))
-            }
+            {"date": date, "close": float(val.get("5. adjusted close", 0))}
             for date, val in sorted(data.items())[-120:]
         ]
         return {"ticker": ticker, "prices": result}
     except Exception as e:
         return {"error": "Failed to fetch or parse price data", "details": str(e)}
+
+
+@app.get("/api/income")
+def get_income_statement(ticker: str):
+    url = f"{BASE_URL}?function=INCOME_STATEMENT&symbol={ticker}&apikey={API_KEY}"
+    try:
+        res = requests.get(url)
+        res.raise_for_status()
+        json_data = res.json()
+        if "Note" in json_data or "Error Message" in json_data:
+            return {"error": "API limit or invalid request", "details": json_data}
+        data = json_data.get("annualReports", [])
+        return {"ticker": ticker, "data": data}
+    except Exception as e:
+        return {"error": "Failed to fetch or parse income data", "details": str(e)}
