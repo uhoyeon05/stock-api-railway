@@ -5,21 +5,18 @@ import os
 
 app = FastAPI()
 
-# CORS 허용 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 모든 origin 허용
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 환경변수에서 API 키 읽기
 API_KEY = os.getenv("ALPHAVANTAGE_API_KEY", "여기에_API_키_입력")
 BASE_URL = "https://www.alphavantage.co/query"
 
-# ✅ /api 제거한 새로운 라우터 경로
-@app.get("/price")
+@app.get("/api/price")
 def get_stock_price(ticker: str):
     url = f"{BASE_URL}?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol={ticker}&apikey={API_KEY}"
     try:
@@ -42,8 +39,7 @@ def get_stock_price(ticker: str):
     except Exception as e:
         return {"error": "Failed to fetch or parse price data", "details": str(e)}
 
-
-@app.get("/income")
+@app.get("/api/income")
 def get_income_statement(ticker: str):
     url = f"{BASE_URL}?function=INCOME_STATEMENT&symbol={ticker}&apikey={API_KEY}"
     try:
